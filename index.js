@@ -126,7 +126,7 @@ io.on('connection', (socket) => {
     socket.on('pesquisa-produto', (dados) => {
         var textoPesquisa = dados.textoPesquisa;
 
-        mysqlCon.query('SELECT nome, preco FROM produto WHERE LOWER(nome) LIKE ?', ['%' + textoPesquisa + '%'], function(err, result) {
+        mysqlCon.query('SELECT nome, preco FROM produto WHERE LOWER(nome) LIKE ?', ['%' + textoPesquisa.toLowerCase() + '%'], function(err, result) {
 
             if (err) throw err;
 
