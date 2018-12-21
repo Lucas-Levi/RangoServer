@@ -8,7 +8,7 @@ let mysqlCon = mysql.createConnection({
     host: 'localhost',
     user: 'root',
     password: 'senhamysql',
-    database: 'rango'
+    database: 'dadosRango'
 });
 mysqlCon.connect();
 
@@ -16,31 +16,25 @@ io.on('connection', (socket) => {
     console.log("User connected.");
 
     socket.on('disconnect', function() {
-        // gerenciar desconexão de usuário
+        // todo: fazer gerencimento de desconexão de usuário
         console.log("User disconnected.");
     });
 
     socket.on('login-vendedor', (dados) => {
-        let email = dados.email;
-        let senha = dados.senha;
+        var email = dados.email;
+        var senha = dados.senha;
 
         mysqlCon.query('SELECT email, senha FROM vendedor WHERE email = ?', [email], function(err, result) {
             if (err) throw err;
 
             if (result.length != 1) {
-                socket.emit('retorno-login-vendedor', {
-                    mensagem: 'Email não cadastrado no sistema.'
-                });
+                socket.emit('retorno-login-vendedor', 1);
             } else {
                 var senhaBanco = result[0].senha;
                 if (senha === senhaBanco) {
-                    socket.emit('retorno-login-vendedor', {
-                        mensagem: 'Login realizado com sucesso!'
-                    });
+                    socket.emit('retorno-login-vendedor', 0);
                 } else {
-                    socket.emit('retorno-login-vendedor', {
-                        mensagem: 'A senha não corresponde ao email informado.'
-                    });
+                    socket.emit('retorno-login-vendedor', 2);
                 }
             }
         });
@@ -50,9 +44,12 @@ io.on('connection', (socket) => {
         var nomeNegocio = dados.nomeNegocio;
         var cpf = dados.cpf;
         var telefone = dados.telefone;
-        var categoria = dados.categoria;
-        var distanciaEntrega = dados.distanciaEntrega;
-        var nome = dados.nome;
+        var categoriaEstabelecimento = dados.categoriaEstabelecimento;
+        var limiteEntrega = dados.limiteEntrega;
+        var valorFrete = dados.valorFrete;
+        var nomeVendedor = dados.nomeVendedor;
+        var sobrenomeVendedor = dados.sobrenomeVendedor;
+        var sexo = dados.sexo;
         var email = dados.email;
         var senha = dados.senha;
         var formaPagamento = dados.formaPagamento;
@@ -61,53 +58,92 @@ io.on('connection', (socket) => {
             if (err) throw err;
 
             if (result.length > 0) {
-                socket.emit('retorno-cadastro-vendedor', {
-                    mensagem: 'Já existe um vendedor cadastrado com este cpf.'
-                });
+                socket.emit('retorno-cadastro-vendedor', 1);
             } else {
-                mysqlCon.query("INSERT INTO vendedor (cpfVendedor, nome, email, senha, limiteEntrega, formaPagamento) VALUES " +
-                    "(%, %, %, %, %, %)" [cpf, nome, email, senha, distanciaEntrega, formaPagamento], function(err, result) {
-                        if (err) throw err;
-                        socket.emit('retorno-cadastro-vendedor', {
-                            mensagem: "Cadastro realizado com sucesso."
-                        });
-                    });
+                mysqlCon.query('SELECT * FROM vendedor WHERE email = ?', [email], function(err, result) {
+                    if (err) throw err;
+
+                    if (result.length > 0) {
+                        socket.emit('retorno-cadastro-vendedor', 2);
+                    } else {
+                        mysqlCon.query('INSERT INTO vendedor (cpfVendedor, primeiroNome, ultimoNome, email, senha, sexo, limiteEntrega, formaPagamento,) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
+                            [cpf, nomeVendedor, sobrenomeVendedor, email, senha, sexo, limiteEntrega, formaPagamento]);
+                        socket.emit('retorno-cadastro-vendedor', 0);
+                    }
+                });
             }
         });
     });
 
     socket.on('login-cliente', (dados) => {
-        let email = dados.email;
-        let senha = dados.senha;
+        var email = dados.email;
+        var senha = dados.senha;
 
         mysqlCon.query("SELECT email, senha FROM cliente WHERE email = ?", [email], function(err, result) {
             if (err) throw err;
 
             if (result.length != 1) {
-                socket.emit('retorno-login-cliente', {
-                    mensagem: 'Email não cadastrado no sistema.'
-                });
+                socket.emit('retorno-login-cliente', 1);
             } else {
-                let senhaBanco = result[0].senha;
+                var senhaBanco = result[0].senha;
                 if (senha === senhaBanco) {
-                    socket.emit('retorno-login-cliente', {
-                        mensagem: 'Login realizado com sucesso!'
-                    });
+                    socket.emit('retorno-login-cliente', 0);
                 } else {
-                    socket.emit('retorno-login-cliente', {
-                        mensagem: 'A senha não corresponde ao email informado.'
-                    });
+                    socket.emit('retorno-login-cliente', 2);
                 }
             }
         });
     });
 
     socket.on('cadastro-cliente', (dados) => {
-        let nome = dados.nome;
-        let email = dados.email;
-        let senha = dados.senha;
+        var cpf = dados.cpf;
+        var nome = dados.nome;
+        var sobrenome = dados.sobrenome;
+        var email = dados.email;
+        var senha = dados.senha;
 
-        
+        mysqlCon.query('SELECT * FROM cliente WHERE cpf = ?', [cpf], function(err, result) {
+            if (err) throw err;
+
+            if (result.length > 0) {
+                socket.emit('retorno-cadastro-cliente', 1);
+            } else {
+                mysqlCon.query('SELECT * FROM cliente WHERE email = ?', [email], function(err, result) {
+                    if (err) throw err;
+
+                    if (result.length > 0) {
+                        socket.emit('retorno-cadastro-cliente', 2);
+                    } else {
+                        mysqlCon.query('INSERT INTO cliente (cpfCliente, primeiroNome, ultimoNome, email, senha) VALUES (?, ?, ?, ?, ?, ?)',
+                            [cpf, nome, sobrenome, email, senha]);
+                        socket.emit('retorno-cadastro-cliente', 0);
+                    }
+                });
+            }
+        });
+    });
+
+    socket.on('pesquisa-produto', (dados) => {
+        var textoPesquisa = dados.textoPesquisa;
+
+        mysqlCon.query('SELECT produto.nome AS nome_produto, produto.preco AS preco_produto, vendedor.primeiroNome AS nome_estabelecimento FROM produto ' +
+            'INNER JOIN vendedor ON produto.fk_CpfVendedor = vendedor.cpfVendedor' +
+            "WHERE produto.nome LIKE '%?%'", [textoPesquisa], function(err, result) {
+
+            if (err) throw err;
+
+            var retorno = [];
+            for (i = 0; i < result.length; i++) {
+                var linha = result[i];
+                retorno.push({
+                    nome: linha.nome_produto,
+                    preco: linha.preco_produto,
+                    nomeEstabelecimento: linha.nome_estabelecimento
+                });
+            }
+
+            socket.emit('retorno-pesquisa-produto', retorno);
+        });
     });
 });
 
