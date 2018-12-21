@@ -102,7 +102,7 @@ io.on('connection', (socket) => {
         var email = dados.email;
         var senha = dados.senha;
 
-        mysqlCon.query('SELECT * FROM cliente WHERE cpf = ?', [cpf], function(err, result) {
+        mysqlCon.query('SELECT * FROM cliente WHERE cpfCliente = ?', [cpf], function(err, result) {
             if (err) throw err;
 
             if (result.length > 0) {
@@ -114,7 +114,7 @@ io.on('connection', (socket) => {
                     if (result.length > 0) {
                         socket.emit('retorno-cadastro-cliente', 2);
                     } else {
-                        mysqlCon.query('INSERT INTO cliente (cpfCliente, primeiroNome, ultimoNome, email, senha) VALUES (?, ?, ?, ?, ?, ?)',
+                        mysqlCon.query('INSERT INTO cliente (cpfCliente, primeiroNome, ultimoNome, email, senha) VALUES (?, ?, ?, ?, ?)',
                             [cpf, nome, sobrenome, email, senha]);
                         socket.emit('retorno-cadastro-cliente', 0);
                     }
