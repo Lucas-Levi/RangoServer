@@ -60,6 +60,16 @@ Cadastro cliente
 
 
 Cadastro produto
+-mensagem: 'cadastro-produto'
+-mensagem retorno: 'retorno-cadastro-produto'
+-dados:
+	nome
+	preco
+	tempoMedioPreparo
+	descricao
+	disponivel
+-retornos:
+	0 - Sucesso
 
 
 Pesquisa produto

@@ -145,6 +145,25 @@ io.on('connection', (socket) => {
             socket.emit('retorno-pesquisa-produto', retorno);
         });
     });
+
+    socket.on('cadastro-produto', (dados) => {
+        var nome = dados.nome;
+        var preco = dados.preco;
+        var tempoMedioPreparo = dados.tempoMedioPreparo;
+        var descricao = dados.descricao;
+        var disponivel = dados.disponivel;
+
+        if (disponivel) {
+            disponivel = 'S'
+        } else {
+            disponivel = 'N'
+        }
+
+        mysqlCon.query('INSERT INTO produto (nome, descrição, preco, disponivel) VALUES (?, ?, ?, ?)',
+            [nome, descricao, preco, disponivel]);
+        
+        socket.emit('retorno-cadastro-produto', 0); // sucesso
+    });
 });
 
 var port = process.env.PORT || 3001;
