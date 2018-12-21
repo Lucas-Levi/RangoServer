@@ -54,7 +54,7 @@ io.on('connection', (socket) => {
         var senha = dados.senha;
         var formaPagamento = dados.formaPagamento;
 
-        mysqlCon.query('SELECT * FROM vendedor WHERE cpf = ?', [cpf], function(err, result) {
+        mysqlCon.query('SELECT * FROM vendedor WHERE cpfVendedor = ?', [cpf], function(err, result) {
             if (err) throw err;
 
             if (result.length > 0) {
@@ -66,7 +66,7 @@ io.on('connection', (socket) => {
                     if (result.length > 0) {
                         socket.emit('retorno-cadastro-vendedor', 2);
                     } else {
-                        mysqlCon.query('INSERT INTO vendedor (cpfVendedor, primeiroNome, ultimoNome, email, senha, sexo, limiteEntrega, formaPagamento,) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
+                        mysqlCon.query('INSERT INTO vendedor (cpfVendedor, primeiroNome, ultimoNome, email, senha, sexo, limiteEntrega, formaPagamento) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
                             [cpf, nomeVendedor, sobrenomeVendedor, email, senha, sexo, limiteEntrega, formaPagamento]);
                         socket.emit('retorno-cadastro-vendedor', 0);
                     }
@@ -126,9 +126,7 @@ io.on('connection', (socket) => {
     socket.on('pesquisa-produto', (dados) => {
         var textoPesquisa = dados.textoPesquisa;
 
-        mysqlCon.query('SELECT produto.nome AS nome_produto, produto.preco AS preco_produto, vendedor.primeiroNome AS nome_estabelecimento FROM produto ' +
-            'INNER JOIN vendedor ON produto.fk_CpfVendedor = vendedor.cpfVendedor' +
-            "WHERE produto.nome LIKE '%?%'", [textoPesquisa], function(err, result) {
+        mysqlCon.query('SELECT nome, preco FROM produto WHERE LOWER(nome) LIKE ?', ['%' + textoPesquisa + '%'], function(err, result) {
 
             if (err) throw err;
 
@@ -136,9 +134,9 @@ io.on('connection', (socket) => {
             for (i = 0; i < result.length; i++) {
                 var linha = result[i];
                 retorno.push({
-                    nome: linha.nome_produto,
-                    preco: linha.preco_produto,
-                    nomeEstabelecimento: linha.nome_estabelecimento
+                    nome: linha.nome,
+                    preco: linha.preco,
+                    nomeEstabelecimento: 'Estabelecimento X'
                 });
             }
 
