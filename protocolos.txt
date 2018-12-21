@@ -1,0 +1,73 @@
+Login vendedor
+-mensagem: 'login-vendedor'
+-mensagem retorno: 'retorno-login-vendedor'
+-dados:
+	email
+	senha
+-retornos:
+	0 - Sucesso
+	1 - Email não cadastrado no sistema
+	2 - Senha incorreta
+
+
+Login cliente
+-mensagem: 'login-cliente'
+-mensagem retorno: 'retorno-login-cliente'
+-dados:
+	email
+	senha
+-retornos:
+	0 - Sucesso
+	1 - Email não cadastrado no sistema
+	2 - Senha incorreta
+
+
+Cadastro vendedor
+-mensagem: 'cadastro-vendedor'
+-mensagem retorno: 'retorno-cadastro-vendedor'
+-dados:
+	nomeNegocio
+	cpf
+	telefone
+	categoriaEstabelecimento
+	limiteEntrega
+	valorFrete
+	nomeVendedor
+	sobrenomeVendedor
+	sexo
+	email
+	senha
+	formaPagamento
+-retornos:
+	0 - Sucesso
+	1 - CPF já cadastrado.
+	2 - Email já cadastrado
+
+
+Cadastro cliente
+-mensagem: 'cadastro-cliente'
+-mensagem retorno: 'retorno-cadastro-cliente'
+-dados:
+	cpf
+	nome
+	sobrenome
+	email
+	senha
+-retornos:
+	0 - Sucesso
+	1 - CPF já cadastrado.
+	2 - Email já cadastrado
+
+
+Cadastro produto
+
+
+Pesquisa produto
+-mensagem: 'pesquisa-produto'
+-mensagem retorno: 'retorno-pesquisa-produto'
+-dados:
+	textoPesquisa
+-retornos:
+	array com produtos cadastrados formato {
+		{  nome, preco, nomeEstabelecimento }
+	}
